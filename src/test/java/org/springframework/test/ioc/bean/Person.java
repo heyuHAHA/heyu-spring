@@ -1,4 +1,6 @@
-package bean;
+package org.springframework.test.ioc.bean;
+
+import bean.Car;
 
 public class Person {
 

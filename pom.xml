@@ -27,6 +27,12 @@
             <version>3.11.1</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.7.8</version>
+        </dependency>
     </dependencies>
 
 
