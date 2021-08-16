@@ -5,6 +5,7 @@ import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.BeanReference;
 
-import java.beans.Beans;
 import java.lang.reflect.Method;
 
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
@@ -37,17 +37,32 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
         //注册有销毁方法的bean
         registerDisposableBeanIfNecessary(beanName,bean,beanDefinition);
-        addSingleton(beanName,bean);
+
+        //addSingleton(beanName,bean);
+        //增加了prototype 和 single类型的Bean，如果是single就放到缓存
+        if (beanDefinition.isSingleton()) {
+            addSingleton(beanName,bean);
+        }
         return bean;
     }
 
     protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition beanDefinition) {
-        if (bean instanceof DisposableBean || StrUtil.isNotEmpty(beanDefinition.getDestoryMethodName())) {
-            registerDisposableBean(beanName,new DisposableBeanAdapter(bean,beanName,beanDefinition));
+//        if (bean instanceof DisposableBean || StrUtil.isNotEmpty(beanDefinition.getDestroyMethodName())) {
+//            registerDisposableBean(beanName,new DisposableBeanAdapter(bean,beanName,beanDefinition));
+//        }
+        //只有singleton类型Bean会执行销毁方法
+        if (beanDefinition.isSingleton()) {
+            if (bean instanceof DisposableBean || StrUtil.isNotEmpty(beanDefinition.getDestroyMethodName())) {
+                registerDisposableBean(beanName,new DisposableBeanAdapter(bean,beanName,beanDefinition));
+            }
         }
     }
 
     protected Object initializeBean(String beanName, Object bean, BeanDefinition beanDefinition) throws BeansException {
+        //TODO 为什么要放在这个位置
+        if (bean instanceof BeanFactoryAware) {
+            ((BeanFactoryAware) bean).setBeanFactory(this);
+        }
         //执行BeanPostProcessor的前置处理
         Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean,beanName);
         try {

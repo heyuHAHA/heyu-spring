@@ -3,24 +3,51 @@ package org.springframework.beans.factory.support;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ConfigurableBeanFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+/**
+ * 定义了getBean的框架
+ */
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
 
     private final List<BeanPostProcessor> beanPostProcessorList = new ArrayList<>();
+
+    private final Map<String, Object> factoryBeanCache = new HashMap<>();
     @Override
-    public Object getBean(String name) throws BeansException {
-        Object bean = getSingleton(name);
-        if (bean != null) {
-            return bean;
+    public Object getBean(String beanName) throws BeansException {
+       Object sharedInstance = getSingleton(beanName);
+       if (sharedInstance != null) {
+           return getObjectForBeanInstance(sharedInstance,beanName);
+       }
+       BeanDefinition beanDefinition = getBeanDefinition(beanName);
+       sharedInstance = createBean(beanName,beanDefinition);
+       return getObjectForBeanInstance(sharedInstance,beanName);
+    }
+
+    protected Object getObjectForBeanInstance(Object sharedInstance, String beanName) throws BeansException {
+        Object bean = sharedInstance;
+        if(sharedInstance instanceof FactoryBean) {
+            FactoryBean factoryBean = (FactoryBean) sharedInstance;
+            try {
+                if (factoryBean.isSingleton()) {
+                    bean = factoryBeanCache.get(beanName);
+                    if (bean == null) {
+                        bean = factoryBean.getObject();
+                        factoryBeanCache.put(beanName, bean);
+                    }
+                } else {
+                    bean = factoryBean.getObject();
+                }
+
+            } catch (Exception e) {
+                throw new BeansException("FactoryBean threw exception on object[" + beanName + "] creation", e);
+            }
         }
-        BeanDefinition beanDefinition = getBeanDefinition(name);
-        return createBean(name,beanDefinition);
+        return bean;
     }
 
     @Override
