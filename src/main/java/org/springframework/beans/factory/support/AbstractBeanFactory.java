@@ -2,11 +2,13 @@ package org.springframework.beans.factory.support;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ConfigurableBeanFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
 
@@ -26,6 +28,18 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         //有则覆盖
         this.beanPostProcessorList.remove(beanPostProcessor);
         this.beanPostProcessorList.add(beanPostProcessor);
+    }
+
+    public  void destroySingletons() throws BeansException {
+        Set<String> beanNames = disposableBeanMap.keySet();
+        for (String beanName :beanNames) {
+            DisposableBean disposableBean = disposableBeanMap.remove(beanName);
+            try{
+                disposableBean.destroy();
+            } catch (Exception e) {
+                throw new BeansException("Destroy method on bean with name '" + beanName + "' threw an exception");
+            }
+        }
     }
 
     public List<BeanPostProcessor> getBeanPostProcessorList() {

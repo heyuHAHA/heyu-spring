@@ -15,7 +15,7 @@ public class ClassPathResource implements Resource{
     public InputStream getInputStream() throws IOException {
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(this.path);
         if (is == null) {
-            throw new FileNotFoundException(this.path + "cannot be opened because it does not exist");
+            throw new FileNotFoundException(this.path + " cannot be opened because it does not exist");
         }
         return is;
     }

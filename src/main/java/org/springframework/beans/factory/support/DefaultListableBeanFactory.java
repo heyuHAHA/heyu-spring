@@ -14,7 +14,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
      public BeanDefinition getBeanDefinition(String beanName) throws BeansException {
       BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
       if (beanDefinition == null) {
-          throw new BeansException();
+          throw new BeansException("can not find BeanDefinition for beanName[" + beanName +"]");
       }
       return beanDefinition;
     }
@@ -42,7 +42,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     @Override
     public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
         Map<String, T> result = new HashMap<>();
-        return null;
+        for(Map.Entry<String,BeanDefinition> entry : beanDefinitionMap.entrySet()) {
+            Class beanClass = entry.getValue().getBeanClass();
+            String beanName = entry.getKey();
+            if(type.isAssignableFrom(beanClass)) {
+                T bean = (T)getBean(beanName);
+                result.put(beanName,bean);
+            }
+        }
+        return result;
     }
 
     @Override

@@ -1,9 +1,10 @@
-package org.springframework.beans.factory.support;
+package org.springframework.context.support;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.support.AbstractApplicationContext;
 
-public abstract class AbstractRefreshableApplicationContext extends AbstractApplicationContext{
+public abstract class AbstractRefreshableApplicationContext extends AbstractApplicationContext {
 
     private DefaultListableBeanFactory beanFactory;
 

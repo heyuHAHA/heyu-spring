@@ -1,4 +1,4 @@
-package org.springframework.beans.factory.support;
+package org.springframework.context.support;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -25,6 +25,24 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
         //提前实例化单例bean
         beanFactory.preInstantiateSingletons();
+    }
+
+    @Override
+    public void registerShutdownHook() {
+        Thread shutdownHook = new Thread() {
+            public void run() {
+                try {
+                    doClose();
+                } catch (BeansException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
+    }
+
+    protected  void doClose() throws BeansException {
+        getBeanFactory().destroySingletons();
     }
 
     protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) throws BeansException {
