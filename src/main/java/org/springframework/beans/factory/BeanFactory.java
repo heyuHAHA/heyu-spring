@@ -4,6 +4,10 @@ import org.springframework.beans.BeansException;
 
 import java.beans.Beans;
 
+/**
+ * 只定义getBean方法，体现了单一职责?
+ *
+ */
 public interface BeanFactory {
 
     /**

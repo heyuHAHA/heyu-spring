@@ -6,6 +6,7 @@ import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.BeanReference;
 
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
 
@@ -47,7 +48,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 pv = propertyValue;
                 String name = propertyValue.getName();
                 Object value = propertyValue.getValue();
-                //TODO
+                if (value instanceof BeanReference) {
+                    BeanReference beanReference  = (BeanReference) value;
+                    value = getBean(beanReference.getBeanName());
+                }
                 BeanUtil.setFieldValue(bean,name,value);
             }
         } catch (Exception e) {
@@ -87,5 +91,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             }
         }
         return null;
+    }
+
+    protected void invokeInitMethods(String beanName, Object bean, BeanDefinition beanDefinition) {
+        //TODO
+        System.out.println("执行bean[" + beanName + "]的初始化方法");
     }
 }
