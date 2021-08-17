@@ -11,4 +11,5 @@
         <bean id="car" class="bean.Car">
                 <property name="brand" value="benz"/>
         </bean>
+
 </beans>
