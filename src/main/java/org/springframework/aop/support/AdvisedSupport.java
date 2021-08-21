@@ -10,6 +10,17 @@ public class AdvisedSupport {
 
     private MethodInterceptor methodInterceptor;
 
+    //是否使用Cglib代理
+    private boolean proxyTargetClass = false;
+
+    public boolean isProxyTargetClass() {
+        return proxyTargetClass;
+    }
+
+    public void setProxyTargetClass(boolean proxyTargetClass) {
+        this.proxyTargetClass = proxyTargetClass;
+    }
+
     public TargetSource getTargetSource() {
         return targetSource;
     }
