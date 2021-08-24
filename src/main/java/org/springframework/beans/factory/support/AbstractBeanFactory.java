@@ -6,6 +6,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.util.StringValueResolver;
 
 import java.util.*;
 
@@ -15,6 +16,8 @@ import java.util.*;
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
 
     private final List<BeanPostProcessor> beanPostProcessorList = new ArrayList<>();
+
+    private final List<StringValueResolver> embeddedValueResolvers = new ArrayList<>();
 
     private final Map<String, Object> factoryBeanCache = new HashMap<>();
     @Override
@@ -77,6 +80,8 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
         return (T) getBean(name);
     }
+
+
 
     protected abstract Object createBean(String beanName, BeanDefinition beanDefinition) throws BeansException;
 

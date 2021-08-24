@@ -1,9 +1,11 @@
 package bean;
 
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Value;
 
 @Component
 public class Car {
+    @Value("${brand}")
     private String brand;
 
     public String getBrand() {

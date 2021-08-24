@@ -11,6 +11,7 @@ import org.springframework.aop.support.AdvisedSupport;
 import org.springframework.aop.support.ProxyFactory;
 import org.springframework.aop.support.TargetSource;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -20,6 +21,10 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import java.util.Collection;
 
 public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPostProcessor, BeanFactoryAware {
+    @Override
+    public PropertyValues postProcessPropertyValues(PropertyValues pvs, Object bean, String beanName) throws BeansException {
+        return null;
+    }
 
     private DefaultListableBeanFactory beanFactory;
 

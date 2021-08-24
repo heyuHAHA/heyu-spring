@@ -8,10 +8,15 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
+import org.springframework.util.StringValueResolver;
 
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * 这个类是BeanFactoryPostProcessor，用来替换在配置文件中的${}值
+ * AutowiredAnnotationBeanPostProcessor是针对注解{@Value}的，虽然也是替换${}值，但生命周期和这个类不一样
+ */
 public class PropertyPlaceholderConfigurer implements BeanFactoryPostProcessor {
     public static final String PLACEHOLDER_PREFIX = "${";
     public static final String PLACEHOLDER_SUFFIX = "}";
@@ -26,6 +31,10 @@ public class PropertyPlaceholderConfigurer implements BeanFactoryPostProcessor {
 
         //属性值替换占位符
         processProperties(beanFactory,properties);
+
+        //往容器中添加字符解析器， 供解析@value注解使用
+        StringValueResolver valueResolver = new PlaceholderResolvingStringValueResolver(properties);
+        beanFactory.addEmbeddedValueResolver(valueResolver);
 
     }
 
@@ -48,16 +57,8 @@ public class PropertyPlaceholderConfigurer implements BeanFactoryPostProcessor {
 
             if (value instanceof String) {
                 //
-                String strVal = (String)value;
-                StringBuffer buf = new StringBuffer(strVal);
-                int startIndex = strVal.indexOf(PLACEHOLDER_PREFIX);
-                int endIndex = strVal.indexOf(PLACEHOLDER_SUFFIX);
-                if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
-                    String key = strVal.substring(startIndex+2,endIndex);
-                    String val = properties.getProperty(key);
-                    buf.replace(startIndex,endIndex+1,val);
-                    propertyValues.add(new PropertyValue(propertyValue.getName(),buf.toString()));
-                }
+                value = resolvePlaceholder((String) value,properties);
+                propertyValues.add(new PropertyValue(propertyValue.getName(),value));
             }
         }
     }
@@ -74,7 +75,36 @@ public class PropertyPlaceholderConfigurer implements BeanFactoryPostProcessor {
         return properties;
     }
 
+
+
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    private String resolvePlaceholder(String value, Properties properties) {
+        String strVal = value;
+        StringBuffer buf = new StringBuffer(strVal);
+        int startIndex = strVal.indexOf(PLACEHOLDER_PREFIX);
+        int endIndex = strVal.indexOf(PLACEHOLDER_SUFFIX);
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            String key = strVal.substring(startIndex + 2, endIndex);
+            String val = properties.getProperty(key);
+            buf.replace(startIndex, endIndex + 1, val);
+        }
+        return buf.toString();
+
+    }
+
+    private class PlaceholderResolvingStringValueResolver implements StringValueResolver {
+        private final Properties properties;
+
+        public PlaceholderResolvingStringValueResolver(Properties properties) {
+            this.properties = properties;
+        }
+
+        @Override
+        public String resolverStringValue(String strVal) {
+            return PropertyPlaceholderConfigurer.this.resolvePlaceholder(strVal, properties);
+        }
     }
 }

@@ -5,6 +5,7 @@ import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -18,6 +19,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     @Override
     protected Object createBean(String beanName, BeanDefinition beanDefinition) throws BeansException {
+        //生命周期第三阶段：InstantiationAwareBeanPostProcessor，可生成代理对象
         Object bean = resolveBeforeInstantiation(beanName, beanDefinition);
         if (bean != null)
             return bean;
@@ -44,7 +46,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     private Object doCreateBean(String beanName, BeanDefinition beanDefinition) throws BeansException {
         Object bean = null;
         try {
+            //生命周期第四步:bean实例化
             bean = createBeanInstance(beanDefinition);
+            //生命周期第五步:InstantiationAwareBeanPostProcessor，修改BeanDefinition的PropertyValue
+            applyBeanPostProcessorsBeforeApplyingPropertyValues(beanName,bean,beanDefinition);
             //为Bean填充属性
             applyPropertyValues(beanName,bean,beanDefinition);
             //执行Bean的初始化方法和BeanPostProcessor的前置和后置处理方法
@@ -63,6 +68,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return bean;
     }
 
+    private void applyBeanPostProcessorsBeforeApplyingPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) throws BeansException {
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessorList()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                PropertyValues pvs = ((InstantiationAwareBeanPostProcessor)beanPostProcessor).postProcessPropertyValues(beanDefinition.getPropertyValues(),bean,beanName);
+                if (pvs != null) {
+                    for (PropertyValue propertyValue : pvs.getPropertyValues()) {
+                        beanDefinition.getPropertyValues().add(propertyValue);
+                    }
+                }
+            }
+        }
+    }
+
     protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition beanDefinition) {
 //        if (bean instanceof DisposableBean || StrUtil.isNotEmpty(beanDefinition.getDestroyMethodName())) {
 //            registerDisposableBean(beanName,new DisposableBeanAdapter(bean,beanName,beanDefinition));
@@ -76,20 +94,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     protected Object initializeBean(String beanName, Object bean, BeanDefinition beanDefinition) throws BeansException {
-        //TODO 为什么要放在这个位置
+        //生命周期第六步: BeanFactoryAware#setBeanFactory
         if (bean instanceof BeanFactoryAware) {
             ((BeanFactoryAware) bean).setBeanFactory(this);
         }
-        //执行BeanPostProcessor的前置处理
+        //生命周期第七步:执行BeanPostProcessor的前置处理, ApplicationContextAware也是这一步
+
         Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean,beanName);
         try {
-
+            //生命周期第八步: 执行Bean的初始化方法
             invokeInitMethods(beanName,wrappedBean,beanDefinition);
 
         } catch (Exception e) {
             throw new BeansException("An error occur in initalizeBean");
         }
-        //执行BeanPostProcessor的后置处理
+        //生命周期第九步:执行BeanPostProcessor的后置处理
         wrappedBean = applyBeanPostProcessorsAfterInitialization(bean,beanName);
         return wrappedBean;
     }

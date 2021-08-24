@@ -3,13 +3,19 @@ package org.springframework.beans.factory.support;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.util.StringValueResolver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory implements  ConfigurableListableBeanFactory , BeanDefinitionRegistry{
 
     private Map<String, BeanDefinition> beanDefinitionMap = new HashMap<>();
+
+    private List<StringValueResolver> embeddedValueResolvers = new ArrayList<>();
+
     @Override
      public BeanDefinition getBeanDefinition(String beanName) throws BeansException {
       BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
@@ -21,7 +27,21 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
     @Override
     public void preInstantiateSingletons() throws BeansException {
+        for (String s : beanDefinitionMap.keySet()) {
+            getBean(s);
+        }
+    }
 
+    public void addEmbeddedValueResolver(StringValueResolver valueResolver) {
+        this.embeddedValueResolvers.add(valueResolver);
+    }
+
+    public String resolveEmbeddedValue(String value) {
+        String result = value;
+        for (StringValueResolver resolver :this.embeddedValueResolvers) {
+            result = resolver.resolverStringValue(result);
+        }
+        return result;
     }
 
     @Override
