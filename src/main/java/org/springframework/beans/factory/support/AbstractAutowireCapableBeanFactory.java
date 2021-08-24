@@ -8,10 +8,7 @@ import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.BeanReference;
+import org.springframework.beans.factory.config.*;
 
 import java.lang.reflect.Method;
 
@@ -21,7 +18,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     @Override
     protected Object createBean(String beanName, BeanDefinition beanDefinition) throws BeansException {
+        Object bean = resolveBeforeInstantiation(beanName, beanDefinition);
+        if (bean != null)
+            return bean;
         return doCreateBean(beanName,beanDefinition);
+    }
+
+    private Object resolveBeforeInstantiation(String beanName, BeanDefinition beanDefinition) throws BeansException {
+        Object bean = applyBeanPostProcessorsBeforeInitialization(beanDefinition.getBeanClass(),beanName);
+        return bean;
+    }
+
+    protected Object applyBeanPostProcessorsBeforeInitialization(Class beanClass, String beanName) throws BeansException {
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessorList()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                Object result = ((InstantiationAwareBeanPostProcessor)beanPostProcessor).postProcessBeforeInstantiation(beanClass,beanName);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 
     private Object doCreateBean(String beanName, BeanDefinition beanDefinition) throws BeansException {

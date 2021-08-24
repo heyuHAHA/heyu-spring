@@ -8,6 +8,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinitionReader;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -31,6 +32,8 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
     public static final String INIT_METHOD_ATTRIBUTE = "init-method";
     public static final String DESTROY_METHOD_ATTRIBUTE = "destroy-method";
     public static final String SCOPE_ATTRIBUTE = "scope";
+    public static final String COMPONENT_SCAN_ELEMENT = "context:component-scan";
+    public static final String BASE_PACKAGE_ATTRIBUTE = "base-package";
 
     public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
         super(registry);
@@ -68,6 +71,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
         NodeList childNodes = root.getChildNodes();
         for ( int i = 0; i < childNodes.getLength(); i++) {
             if (childNodes.item(i) instanceof Element) {
+                if (COMPONENT_SCAN_ELEMENT.equals(childNodes.item(i).getNodeName())) {
+                    Element context_component_scan = (Element) childNodes.item(i);
+                    if (context_component_scan != null) {
+                        String basePath = context_component_scan.getAttribute(BASE_PACKAGE_ATTRIBUTE);
+                        if (StrUtil.isEmpty(basePath)) {
+                            throw new BeansException("The value of base-package attribute can not be empty or null");
+                        }
+                        scanPackage(basePath);
+                    }
+                }
                 if (BEAN_ELEMENT.equals(childNodes.item(i).getNodeName())) {
                     //解析bean标签
                     Element bean = (Element) childNodes.item(i);
@@ -127,6 +140,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
                 }
             }
         }
+    }
+
+    private void scanPackage(String basePath) {
+//        System.out.println("basePath :" +basePath);
+        String[] basePackages = StrUtil.splitToArray(basePath, ",");
+        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(getRegistry());
+        scanner.doScan(basePackages);
     }
 
 

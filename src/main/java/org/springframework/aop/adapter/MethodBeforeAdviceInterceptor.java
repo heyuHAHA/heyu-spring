@@ -6,23 +6,24 @@ import org.springframework.aop.MethodBeforeAdvice;
 
 public class MethodBeforeAdviceInterceptor  implements MethodInterceptor {
 
-    private MethodBeforeAdvice methodBeforeAdvice;
+    private MethodBeforeAdvice advice;
 
     public MethodBeforeAdviceInterceptor() {
 
     }
 
     public MethodBeforeAdviceInterceptor(MethodBeforeAdvice methodBeforeAdvice) {
-        this.methodBeforeAdvice = methodBeforeAdvice;
+        this.advice = methodBeforeAdvice;
     }
     @Override
     public Object invoke(MethodInvocation methodInvocation) throws Throwable {
        //在执行代理方法前，先执行before advice操作
-        this.methodBeforeAdvice.before(methodInvocation.getMethod(),methodInvocation.getArguments(),methodInvocation.getThis());
+//        System.out.println(advice);
+        this.advice.before(methodInvocation.getMethod(),methodInvocation.getArguments(),methodInvocation.getThis());
         return methodInvocation.proceed();
     }
 
     public void setAdvice(MethodBeforeAdvice advice) {
-        this.methodBeforeAdvice = advice;
+        this.advice = advice;
     }
 }
