@@ -3,13 +3,17 @@ package org.springframework.test.ioc.bean;
 import bean.Car;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class Person implements InitializingBean, DisposableBean {
 
     private String name;
 
     private int age;
 
+    @Autowired
     private Car car;
 
     public String getName() {

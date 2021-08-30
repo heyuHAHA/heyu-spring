@@ -93,7 +93,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
                     Class<?> clazz = null;
                     try {
-                        System.out.println(className);
+//                        System.out.println(className);
                         clazz = Class.forName(className);
                     } catch (ClassNotFoundException e) {
                         throw new BeansException("Cannot find class [" + className +"]");

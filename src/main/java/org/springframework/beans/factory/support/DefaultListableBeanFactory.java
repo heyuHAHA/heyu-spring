@@ -28,6 +28,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     @Override
     public void preInstantiateSingletons() throws BeansException {
         for (String s : beanDefinitionMap.keySet()) {
+
             getBean(s);
         }
     }
@@ -60,7 +61,24 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     }
 
     @Override
-    public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
+    public <T> T getBean(Class<T> requiredType) throws BeansException {
+        List<String> beanNames = new ArrayList<>();
+        for (Map.Entry<String,BeanDefinition> entry : beanDefinitionMap.entrySet()) {
+            Class beanClass = entry.getValue().getBeanClass();
+            if ( requiredType.isAssignableFrom(beanClass)) {
+                beanNames.add(entry.getKey());
+            }
+        }
+        if (beanNames.size() == 1) {
+            return getBean(beanNames.get(0),requiredType);
+        }
+
+        throw new BeansException(requiredType + "expected single bean but found " +
+                beanNames.size() + ": " + beanNames);
+    }
+
+    @Override
+     public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
         Map<String, T> result = new HashMap<>();
         for(Map.Entry<String,BeanDefinition> entry : beanDefinitionMap.entrySet()) {
             Class beanClass = entry.getValue().getBeanClass();
@@ -70,6 +88,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
                 result.put(beanName,bean);
             }
         }
+
         return result;
     }
 

@@ -8,7 +8,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor{
 
 
    /**
-    * 在bean实例化之后，设置属性之前
+    * 在bean实例化之后，设置属性
     * @param pvs
     * @param bean
     * @param beanName
@@ -16,4 +16,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor{
     * @throws BeansException
     */
    PropertyValues postProcessPropertyValues(PropertyValues pvs, Object bean, String beanName)  throws BeansException;
+
+   /**
+    * 在实例化之后，设置属性之前执行
+    */
+   boolean postProcessAfterInstantiation(Object bean, String beanName);
 }

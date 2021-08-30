@@ -1,5 +1,6 @@
 package org.springframework.context.support;
 
+import cn.hutool.core.lang.Assert;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -95,7 +96,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
     protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         Map<String, BeanPostProcessor> beanPostProcessorMap = beanFactory.getBeansOfType(BeanPostProcessor.class);
+        System.out.println(beanPostProcessorMap.values());
         for (BeanPostProcessor beanPostProcessor : beanPostProcessorMap.values()) {
+            System.out.println(beanPostProcessor);
             beanFactory.addBeanPostProcessor(beanPostProcessor);
 
         }
@@ -121,6 +124,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
     @Override
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
         return getBeanFactory().getBean(name,requiredType);
+    }
+
+    @Override
+    public <T> T getBean(Class<T> requiredType) throws BeansException {
+        return getBeanFactory().getBean(requiredType);
     }
 
     @Override

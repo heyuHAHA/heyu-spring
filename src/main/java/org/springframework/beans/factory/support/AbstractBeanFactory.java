@@ -26,7 +26,7 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
        if (sharedInstance != null) {
            return getObjectForBeanInstance(sharedInstance,beanName);
        }
-       BeanDefinition beanDefinition = getBeanDefinition(beanName);
+        BeanDefinition beanDefinition = getBeanDefinition(beanName);
        sharedInstance = createBean(beanName,beanDefinition);
        return getObjectForBeanInstance(sharedInstance,beanName);
     }
